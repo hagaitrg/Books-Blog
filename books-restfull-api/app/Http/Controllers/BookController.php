@@ -164,8 +164,20 @@ class BookController extends Controller
             'image' => 'mimes:jpg,png,jpeg'
         ]);
 
+
+
         $imagePath = "";
         if ($request->hasFile('image')) {
+
+            $filePath = public_path().$book->image;
+            if (file_exists($filePath)) {
+                try {
+                    unlink($filePath);
+                } catch (Exception $e) {
+                    // Do Nothing
+                }
+            }
+
             $file = $request->file('image');
             $extension = $file->getClientOriginalExtension();
             $fileName ='U-'. time().'.'.$extension;
