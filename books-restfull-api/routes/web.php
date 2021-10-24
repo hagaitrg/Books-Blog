@@ -13,6 +13,12 @@
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
+$router->group(['prefix' => 'api'], function () use ($router) {
+    $router->group(['prefix' => 'v1'], function () use ($router) {
+        $router->group(['prefix' => 'books'], function () use ($router){
+            $router->get('/allBooks', 'BookController@index');
+            $router->get('/{id}', 'BookController@index');
+            $router->post('/createBook', 'BookController@store');
+        });
+    });
 });
