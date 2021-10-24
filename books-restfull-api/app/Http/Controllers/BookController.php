@@ -61,14 +61,16 @@ class BookController extends Controller
 
         $imagePath = "";
         if ($request->hasFile('image')) {
-            $original_filename = $request->file('image')->getClientOriginalName();
-            $original_filename_arr = explode('.', $original_filename);
-            $file_ext = end($original_filename_arr);
-            $destination_path = '/uploads';
-            $image = 'U-' . time() . '.' . $file_ext;
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $fileName ='U-'. time().'.'.$extension;
 
-            $request->file('image')->move($destination_path, $image);
-            $imagePath = '/uploads/' . $image;
+            $savePath = '/uploads/books/';
+            $savePathDB = '/uploads/books/'. $fileName;
+            $path = public_path(). "$savePath";
+            $file->move($path, $fileName);
+
+            $imagePath = $savePathDB;
         }
 
         $data = new Book();
@@ -142,7 +144,61 @@ class BookController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        
+        
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'success' => "false",
+                'data' => null,
+                'mesasge' => 'book not found',
+                'code' => 204
+            ]);
+        }
+
+        $this->validate($request, [
+            'title' => 'string',
+            'category' => 'string',
+            'desc' => 'string',
+            'image' => 'mimes:jpg,png,jpeg'
+        ]);
+
+        $imagePath = "";
+        if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $fileName ='U-'. time().'.'.$extension;
+
+            $savePath = '/uploads/books/';
+            $savePathDB = '/uploads/books/'.$fileName;
+            $path = public_path(). "$savePath";
+            $file->move($path, $fileName);
+
+            $imagePath = $savePathDB;
+        }
+
+        $book->title = $request->title;
+        $book->category = $request->category;
+        $book->desc = $request->desc;
+        $book->image = $imagePath;
+        $book->save();
+
+        if ($book) {
+            return response()->json([
+                'success' => "true",
+                'data' => $book,
+                'mesasge' => 'success update book',
+                'code' => http_response_code(200)
+            ]);
+        } else {
+            return response()->json([
+                'success' => "false",
+                'data' => null,
+                'mesasge' => 'failed update book',
+                'code' => http_response_code(404)
+            ]);
+        }
     }
 
     /**
@@ -153,6 +209,32 @@ class BookController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $book = Book::find($id);
+
+        if (!$book) {
+            return response()->json([
+                'success' => "false",
+                'data' => null,
+                'mesasge' => 'book not found',
+                'code' => 204
+            ]);
+        }
+
+        $book->delete();
+
+        if ($book) {
+            return response()->json([
+                'success' => "true",
+                'mesasge' => 'success delete book',
+                'code' => http_response_code(200)
+            ]);
+        } else {
+            return response()->json([
+                'success' => "false",
+                'mesasge' => 'failed delete book',
+                'code' => http_response_code(404)
+            ]);
+        }
+
     }
 }
